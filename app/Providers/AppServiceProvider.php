@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +24,7 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureCommands();
+        $this->configureModels();
     }
 
     /**
@@ -31,5 +33,13 @@ final class AppServiceProvider extends ServiceProvider
     private function configureCommands(): void
     {
         DB::prohibitDestructiveCommands($this->app->environment('production'));
+    }
+
+    /**
+     * Configure the models.
+     */
+    private function configureModels(): void
+    {
+        Model::shouldBeStrict(! $this->app->environment('production'));
     }
 }
