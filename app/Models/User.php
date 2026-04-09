@@ -8,8 +8,6 @@ namespace App\Models;
 
 use App\Enums\KycVerificationStatus;
 use App\Enums\UserStatus;
-use App\Models\KycVerification;
-use App\Models\OtpCode;
 use App\Traits\HasUuid;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -29,25 +27,11 @@ final class User extends Authenticatable implements HasMedia
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasUuid, InteractsWithMedia, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'status' => UserStatus::class,
-        ];
-    }
-
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
     }
- 
+
     public function getIsEmailVerifiedAttribute(): bool
     {
         return $this->email_verified_at !== null;
@@ -75,11 +59,21 @@ final class User extends Authenticatable implements HasMedia
         return $this->hasOne(KycVerification::class);
     }
 
+    public function borrowings(): HasMany
+    {
+        return $this->hasMany(Borrowing::class);
+    }
+
+    public function activeBorrowings(): HasMany
+    {
+        return $this->hasMany(Borrowing::class)->where('status', 'active');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', UserStatus::ACTIVE);
     }
- 
+
     public function scopeEmailVerified($query)
     {
         return $query->whereNotNull('email_verified_at');
@@ -89,11 +83,25 @@ final class User extends Authenticatable implements HasMedia
     {
         return $query->whereHas('kycVerification', fn ($q) => $q->where('status', KycVerificationStatus::PENDING->value));
     }
- 
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'status' => UserStatus::class,
+        ];
     }
 }
