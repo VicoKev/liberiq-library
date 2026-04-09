@@ -6,7 +6,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Enums\KycVerificationStatus;
 use App\Enums\UserStatus;
+use App\Models\KycVerification;
 use App\Models\OtpCode;
 use App\Traits\HasUuid;
 use Database\Factories\UserFactory;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
@@ -45,17 +48,11 @@ final class User extends Authenticatable implements HasMedia
         return "{$this->first_name} {$this->last_name}";
     }
  
-    /**
-     * Determine if the user has verified their email address.
-     */
-    public function hasVerifiedEmail(): bool
+    public function getIsEmailVerifiedAttribute(): bool
     {
-        return ! is_null($this->email_verified_at);
+        return $this->email_verified_at !== null;
     }
 
-    /**
-     * Mark the given user's email as verified.
-     */
     public function markEmailAsVerified(): bool
     {
         return $this->forceFill([
@@ -63,9 +60,19 @@ final class User extends Authenticatable implements HasMedia
         ])->save();
     }
 
+    public function getIsKycApprovedAttribute(): bool
+    {
+        return $this->kycVerification?->status === KycVerificationStatus::APPROVED->value;
+    }
+
     public function otpCodes(): HasMany
     {
         return $this->hasMany(OtpCode::class);
+    }
+
+    public function kycVerification(): HasOne
+    {
+        return $this->hasOne(KycVerification::class);
     }
 
     public function scopeActive($query)
@@ -76,6 +83,11 @@ final class User extends Authenticatable implements HasMedia
     public function scopeEmailVerified($query)
     {
         return $query->whereNotNull('email_verified_at');
+    }
+
+    public function scopeKycPending($query)
+    {
+        return $query->whereHas('kycVerification', fn ($q) => $q->where('status', KycVerificationStatus::PENDING->value));
     }
  
     public function registerMediaCollections(): void
