@@ -19,13 +19,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['first_name', 'last_name', 'email', 'password', 'country_code', 'phone', 'status'])]
 #[Hidden(['password', 'remember_token'])]
 final class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasUuid, InteractsWithMedia, Notifiable;
+    use HasFactory, HasRoles, HasUuid, InteractsWithMedia, Notifiable;
 
     public function getFullNameAttribute(): string
     {

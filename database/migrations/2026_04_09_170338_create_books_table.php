@@ -35,7 +35,7 @@ return new class extends Migration
             $table->index(['status', 'available_copies']);
             $table->index('author_id');
             $table->index('category_id');
-            $table->fullText(['title', 'description']);
+            $table->index(['title', 'description']);
         });
     }
 
