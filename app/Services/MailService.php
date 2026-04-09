@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Exception;
-use App\Models\User;
 use App\Mail\GenericMail;
+use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class MailService
+final class MailService
 {
     /**
      * Envoie un mail avec options configurables.
@@ -33,7 +33,7 @@ class MailService
             if ($locale) {
                 app()->setLocale($locale);
             }
-            
+
             $mailable = new GenericMail($view, $subject, $data);
 
             // Gérer les pièces jointes
@@ -46,11 +46,11 @@ class MailService
 
             $mail = Mail::to($this->extractEmails($to));
 
-            if (!empty($cc)) {
+            if (! empty($cc)) {
                 $mail->cc($cc);
             }
 
-            if (!empty($bcc)) {
+            if (! empty($bcc)) {
                 $mail->bcc($bcc);
             }
 

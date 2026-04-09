@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +22,7 @@ return new class extends Migration
             $table->integer('attempts')->default(0);
             $table->boolean('is_used')->default(false);
             $table->timestamps();
- 
+
             $table->index(['user_id', 'type', 'is_used']);
             $table->index('expires_at');
         });
